@@ -18,6 +18,7 @@ def download_image(url, filename, folder='images'):
 def main():
     load_dotenv()
     token = os.getenv('VK_TOKEN')
+    group_id = os.getenv('GROUP_ID_VK')
     url = 'https://xkcd.com/info.0.json'
     response = requests.get(url)
     response.raise_for_status()
@@ -60,7 +61,7 @@ def main():
     params = {
         'access_token': token,
         'v': '5.131',
-        'group_id': '217553308',
+        'group_id': group_id,
         'photo': vk_photo,
         'server': vk_server,
         'hash': vk_hash

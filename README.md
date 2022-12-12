@@ -32,6 +32,7 @@ python main.py
 ```angular2html
 CLIENT_ID_VK = ''
 VK_TOKEN = ''
+GROUP_ID_VK = ''
 ```
 Про VK_TOKEN написано в предыдущем абзаце, CLIENT_ID_VK - это '
 ## Цель проекта
