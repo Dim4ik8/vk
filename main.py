@@ -37,14 +37,14 @@ def main():
     print(f"Комментарий к комиксу: {message}")
     download_image(comic_book['img'], f'{num_of_public}.png')
 
-    url_vk = 'https://api.vk.com/method/groups.get'
+    vk_url = 'https://api.vk.com/method/groups.get'
     params = {'access_token': token, 'v': '5.131'}
-    response_vk = requests.get(url_vk, params=params)
+    response_vk = requests.get(vk_url, params=params)
     print(response_vk.json())
 
-    url_vk = 'https://api.vk.com/method/photos.getWallUploadServer'
+    vk_url = 'https://api.vk.com/method/photos.getWallUploadServer'
     params = {'access_token': token, 'v': '5.131', 'group_id': '217553308'}
-    response = requests.get(url_vk, params=params)
+    response = requests.get(vk_url, params=params)
     upload_url = response.json()['response']['upload_url']
     print(f'Ссылка для загрузки фото: {upload_url}')
 
@@ -56,7 +56,7 @@ def main():
         vk_photo = response_for_public['photo']
         vk_hash = response_for_public['hash']
 
-    url_save = 'https://api.vk.com/method/photos.saveWallPhoto'
+    save_url = 'https://api.vk.com/method/photos.saveWallPhoto'
     params = {
         'access_token': token,
         'v': '5.131',
@@ -65,14 +65,14 @@ def main():
         'server': vk_server,
         'hash': vk_hash
     }
-    save_wall_photo = requests.post(url_save, params=params).json()
+    save_wall_photo = requests.post(save_url, params=params).json()
     print(f'Ответ от saveWallPhoto: {save_wall_photo}')
 
     owner_id = save_wall_photo['response'][0]['owner_id']
     media_id = save_wall_photo['response'][0]['id']
     attachments = f'photo{owner_id}_{media_id}'
     print(attachments)
-    url_post = 'https://api.vk.com/method/wall.post'
+    post_url = 'https://api.vk.com/method/wall.post'
     params = {
         'access_token': token,
         'v': '5.131',
@@ -82,7 +82,7 @@ def main():
         'message': message
     }
 
-    requests.post(url_post, params=params)
+    requests.post(post_url, params=params)
     time.sleep(5)
     shutil.rmtree('images')
 
