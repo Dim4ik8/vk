@@ -18,7 +18,8 @@ def main():
     response = requests.get(url)
     response.raise_for_status()
     comic_book = response.json()
-    print(comic_book['alt'])
+    message = comic_book['alt']
+    print(f"Комментарий к комиксу: {message}")
     download_image(comic_book['img'], 'image.png')
 
     # обращаемся к API VK, выводим информацию о группах
@@ -31,20 +32,35 @@ def main():
     url_vk = 'https://api.vk.com/method/photos.getWallUploadServer'
     params = {'access_token': token, 'v': '5.131', 'group_id': '217553308'}
     response = requests.get(url_vk, params=params)
-    print(response.json())
+    # print(response.json())
     upload_url = response.json()['response']['upload_url']
-    print(upload_url)
+    print(f'Ссылка для загрузки фото: {upload_url}')
 
+    # Загружаем картинку по полученному адресу
     with open('images/image.png', 'rb') as file:
-        url = upload_url
-        photo = {
-            'media': file,
-            }
-        response = requests.post(url, data=photo)
+
+        response = requests.post(upload_url, files={'photo': file})
         response.raise_for_status()
-        print(response.json())
+        server = response.json()['server']
+        photo = response.json()['photo']
+        hash = response.json()['hash']
 
+    # Сохраняем картинку в альбоме группы
+    url_save = 'https://api.vk.com/method/photos.saveWallPhoto'
+    params ={'access_token': token, 'v': '5.131', 'group_id': '217553308', 'photo': photo, 'server': server, 'hash': hash}
+    save_wall_photo = requests.post(url_save, params=params).json()
+    print(f'Ответ от saveWallPhoto: {save_wall_photo}')
 
+    # Публикуем на стену
+    owner_id = save_wall_photo['response'][0]['owner_id']
+    media_id = save_wall_photo['response'][0]['id']
+    attachments = f'photo{owner_id}_{media_id}'
+    print(attachments)
+    url_post = 'https://api.vk.com/method/wall.post'
+    params = {'access_token': token, 'v': '5.131', 'owner_id': '-217553308', 'from_group': '1', 'attachments': attachments,
+              'message': message}
+
+    requests.post(url_post, params=params)
 
 if __name__ == '__main__':
     main()
