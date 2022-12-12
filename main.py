@@ -2,6 +2,7 @@ import requests
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+import random
 
 def download_image(url, filename, folder='images'):
     response = requests.get(url)
@@ -22,22 +23,32 @@ def main():
     print(f"Комментарий к комиксу: {message}")
     download_image(comic_book['img'], 'image.png')
 
+    # Узнаем общее количество комиксов на сайте и публикуем случайный
+    total_comics = comic_book['num']
+    num_of_public = random.randint(1, total_comics)
+    url = f'https://xkcd.com/{num_of_public}/info.0.json'
+    response = requests.get(url)
+    response.raise_for_status()
+    comic_book = response.json()
+    message = comic_book['alt']
+    print(f"Комментарий к комиксу: {message}")
+    download_image(comic_book['img'], f'{num_of_public}.png')
+
     # обращаемся к API VK, выводим информацию о группах
-    # url_vk = 'https://api.vk.com/method/groups.get'
-    # params = {'access_token': token, 'v': '5.131'}
-    # response_vk = requests.get(url_vk, params=params)
-    # print(response_vk.json())
+    url_vk = 'https://api.vk.com/method/groups.get'
+    params = {'access_token': token, 'v': '5.131'}
+    response_vk = requests.get(url_vk, params=params)
+    print(response_vk.json())
 
     # обращаемся для получения адреса для загрузки картинки
     url_vk = 'https://api.vk.com/method/photos.getWallUploadServer'
     params = {'access_token': token, 'v': '5.131', 'group_id': '217553308'}
     response = requests.get(url_vk, params=params)
-    # print(response.json())
     upload_url = response.json()['response']['upload_url']
     print(f'Ссылка для загрузки фото: {upload_url}')
 
     # Загружаем картинку по полученному адресу
-    with open('images/image.png', 'rb') as file:
+    with open(f'images/{num_of_public}.png', 'rb') as file:
 
         response = requests.post(upload_url, files={'photo': file})
         response.raise_for_status()
