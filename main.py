@@ -1,3 +1,6 @@
+import shutil
+import time
+
 import requests
 from pathlib import Path
 import os
@@ -72,6 +75,8 @@ def main():
               'message': message}
 
     requests.post(url_post, params=params)
+    time.sleep(5)
+    shutil.rmtree('images')
 
 if __name__ == '__main__':
     main()
