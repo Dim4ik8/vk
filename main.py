@@ -83,7 +83,6 @@ def main():
     }
 
     requests.post(post_url, params=params)
-    time.sleep(5)
     shutil.rmtree('images')
 
 
