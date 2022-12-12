@@ -7,12 +7,14 @@ import os
 from dotenv import load_dotenv
 import random
 
+
 def download_image(url, filename, folder='images'):
     response = requests.get(url)
     response.raise_for_status()
     Path(folder).mkdir(exist_ok=True)
     with open(f'{os.path.join(folder, filename)}', 'wb') as file:
         file.write(response.content)
+
 
 def main():
     load_dotenv()
@@ -52,7 +54,6 @@ def main():
 
     # Загружаем картинку по полученному адресу
     with open(f'images/{num_of_public}.png', 'rb') as file:
-
         response = requests.post(upload_url, files={'photo': file})
         response.raise_for_status()
         server = response.json()['server']
@@ -61,7 +62,14 @@ def main():
 
     # Сохраняем картинку в альбоме группы
     url_save = 'https://api.vk.com/method/photos.saveWallPhoto'
-    params ={'access_token': token, 'v': '5.131', 'group_id': '217553308', 'photo': photo, 'server': server, 'hash': hash}
+    params = {
+        'access_token': token,
+        'v': '5.131',
+        'group_id': '217553308',
+        'photo': photo,
+        'server': server,
+        'hash': hash
+    }
     save_wall_photo = requests.post(url_save, params=params).json()
     print(f'Ответ от saveWallPhoto: {save_wall_photo}')
 
@@ -71,12 +79,19 @@ def main():
     attachments = f'photo{owner_id}_{media_id}'
     print(attachments)
     url_post = 'https://api.vk.com/method/wall.post'
-    params = {'access_token': token, 'v': '5.131', 'owner_id': '-217553308', 'from_group': '1', 'attachments': attachments,
-              'message': message}
+    params = {
+        'access_token': token,
+        'v': '5.131',
+        'owner_id': '-217553308',
+        'from_group': '1',
+        'attachments': attachments,
+        'message': message
+    }
 
     requests.post(url_post, params=params)
     time.sleep(5)
     shutil.rmtree('images')
+
 
 if __name__ == '__main__':
     main()
