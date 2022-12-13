@@ -51,11 +51,11 @@ def main():
 
         with open(f'images/{num_of_public}.png', 'rb') as file:
             response = requests.post(upload_url, files={'photo': file})
-            response.raise_for_status()
-            response_for_public = response.json()
-            vk_server = response_for_public['server']
-            vk_photo = response_for_public['photo']
-            vk_hash = response_for_public['hash']
+        response.raise_for_status()
+        response_for_public = response.json()
+        vk_server = response_for_public['server']
+        vk_photo = response_for_public['photo']
+        vk_hash = response_for_public['hash']
 
         save_url = 'https://api.vk.com/method/photos.saveWallPhoto'
         params = {
