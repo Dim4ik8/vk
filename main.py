@@ -7,11 +7,10 @@ from dotenv import load_dotenv
 import random
 
 
-def download_image(url, filename, folder='images'):
+def download_image(url, filename):
     response = requests.get(url)
     response.raise_for_status()
-    Path(folder).mkdir(exist_ok=True)
-    with open(f'{os.path.join(folder, filename)}', 'wb') as file:
+    with open(f"{os.path.join('images', filename)}", 'wb') as file:
         file.write(response.content)
 
 
@@ -19,6 +18,7 @@ def main():
     load_dotenv()
     token = os.getenv('VK_TOKEN')
     group_id = os.getenv('GROUP_ID_VK')
+    Path('images').mkdir(exist_ok=True)
     url = 'https://xkcd.com/info.0.json'
     response = requests.get(url)
     response.raise_for_status()
@@ -44,7 +44,7 @@ def main():
     print(response_vk.json())
 
     vk_url = 'https://api.vk.com/method/photos.getWallUploadServer'
-    params = {'access_token': token, 'v': '5.131', 'group_id': '217553308'}
+    params = {'access_token': token, 'v': '5.131', 'group_id': group_id}
     response = requests.get(vk_url, params=params)
     upload_url = response.json()['response']['upload_url']
     print(f'Ссылка для загрузки фото: {upload_url}')
@@ -77,12 +77,12 @@ def main():
     params = {
         'access_token': token,
         'v': '5.131',
-        'owner_id': '-217553308',
+        'owner_id': f'-{group_id}',
         'from_group': '1',
         'attachments': attachments,
         'message': message
     }
-
+    print(params)
     requests.post(post_url, params=params)
     shutil.rmtree('images')
 
