@@ -1,3 +1,5 @@
 .idea/
 .env
 images/
+rrr.py
+__pycache__/
