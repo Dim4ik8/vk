@@ -1,3 +1,4 @@
+import logging
 import shutil
 import requests
 from pathlib import Path
@@ -12,22 +13,33 @@ def download_image(url, filename):
     with open(f"{os.path.join('images', filename)}", 'wb') as file:
         file.write(response.content)
 
+
 def get_request_for_comic(url):
     response = requests.get(url)
     response.raise_for_status()
+    decoded_response = response.json()
+    if 'error' in decoded_response:
+        raise requests.exceptions.HTTPError(decoded_response['error'])
     comic_book = response.json()
     message = comic_book['alt']
     return comic_book, message
+
 
 def public_post_to_vk_wall(token, group_id, image, text):
     vk_url = 'https://api.vk.com/method/photos.getWallUploadServer'
     params = {'access_token': token, 'v': '5.131', 'group_id': group_id}
     response = requests.get(vk_url, params=params)
-    upload_url = response.json()['response']['upload_url']
+    decoded_response = response.json()
+    if 'error' in decoded_response:
+        raise requests.exceptions.HTTPError(decoded_response['error'])
+    upload_url = decoded_response['response']['upload_url']
 
     with open(image, 'rb') as file:
         response = requests.post(upload_url, files={'photo': file})
     response.raise_for_status()
+    decoded_response = response.json()
+    if 'error' in decoded_response:
+        raise requests.exceptions.HTTPError(decoded_response['error'])
     response_for_public = response.json()
     vk_server = response_for_public['server']
     vk_photo = response_for_public['photo']
@@ -43,6 +55,8 @@ def public_post_to_vk_wall(token, group_id, image, text):
         'hash': vk_hash
     }
     save_wall_photo = requests.post(save_url, params=params).json()
+    if 'error' in save_wall_photo:
+        raise requests.exceptions.HTTPError(save_wall_photo['error'])
     owner_id = save_wall_photo['response'][0]['owner_id']
     media_id = save_wall_photo['response'][0]['id']
     attachments = f'photo{owner_id}_{media_id}'
@@ -81,7 +95,8 @@ def main():
         print(response_vk.json())
 
         public_post_to_vk_wall(token, group_id, image_for_public, message)
-
+    except requests.exceptions.HTTPError as error:
+        logging.error(f'Ошибка сервера: {error}')
     finally:
         shutil.rmtree('images')
 
