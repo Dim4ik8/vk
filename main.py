@@ -52,7 +52,7 @@ def upload_image_to_vk_server(upload_url, image):
 
 
 def save_image(token, group_id, params_for_posting):
-    save_url = 'https://api.vk.com/method/photos.saveWallPhoto'
+    url_for_saving = 'https://api.vk.com/method/photos.saveWallPhoto'
     params = {
         'access_token': token,
         'v': '5.131',
@@ -61,19 +61,19 @@ def save_image(token, group_id, params_for_posting):
         'server': params_for_posting['vk_server'],
         'hash': params_for_posting['vk_hash']
     }
-    response = requests.post(save_url, params=params)
+    response = requests.post(url_for_saving, params=params)
     response.raise_for_status()
-    save_wall_photo = response.json()
-    if 'error' in save_wall_photo:
-        raise requests.exceptions.HTTPError(save_wall_photo['error'])
-    owner_id = save_wall_photo['response'][0]['owner_id']
-    media_id = save_wall_photo['response'][0]['id']
+    saved_photo = response.json()
+    if 'error' in saved_photo:
+        raise requests.exceptions.HTTPError(saved_photo['error'])
+    owner_id = saved_photo['response'][0]['owner_id']
+    media_id = saved_photo['response'][0]['id']
     attachments = f'photo{owner_id}_{media_id}'
     return attachments
 
 
 def publish_post_to_vk_wall(token, group_id, attachments, text):
-    post_url = 'https://api.vk.com/method/wall.post'
+    url_for_posting = 'https://api.vk.com/method/wall.post'
     params = {
         'access_token': token,
         'v': '5.131',
@@ -82,7 +82,7 @@ def publish_post_to_vk_wall(token, group_id, attachments, text):
         'attachments': attachments,
         'message': text
     }
-    response = requests.post(post_url, params=params)
+    response = requests.post(url_for_posting, params=params)
     response.raise_for_status()
 
 
