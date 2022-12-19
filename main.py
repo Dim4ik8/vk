@@ -17,10 +17,9 @@ def download_image(url, filename):
 def get_comic_book(url):
     response = requests.get(url)
     response.raise_for_status()
-    decoded_response = response.json()
-    if 'error' in decoded_response:
-        raise requests.exceptions.HTTPError(decoded_response['error'])
     comic_book = response.json()
+    if 'error' in comic_book:
+        raise requests.exceptions.HTTPError(comic_book['error'])
     message = comic_book['alt']
     return comic_book, message
 
@@ -37,10 +36,9 @@ def publish_post_to_vk_wall(token, group_id, image, text):
     with open(image, 'rb') as file:
         response = requests.post(upload_url, files={'photo': file})
     response.raise_for_status()
-    decoded_response = response.json()
-    if 'error' in decoded_response:
-        raise requests.exceptions.HTTPError(decoded_response['error'])
     response_for_public = response.json()
+    if 'error' in response_for_public:
+        raise requests.exceptions.HTTPError(response_for_public['error'])
     vk_server = response_for_public['server']
     vk_photo = response_for_public['photo']
     vk_hash = response_for_public['hash']
