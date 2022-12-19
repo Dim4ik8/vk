@@ -73,6 +73,7 @@ def publish_post_to_vk_wall(token, group_id, image, text):
     response = requests.post(post_url, params=params)
     response.raise_for_status()
 
+
 def main():
     load_dotenv()
     token = os.getenv('VK_TOKEN')
@@ -81,7 +82,6 @@ def main():
     try:
         url = 'https://xkcd.com/info.0.json'
         comic_book, message = get_comic_book(url)
-        download_image(comic_book['img'], 'image.png')
 
         total_comics = comic_book['num']
         num_of_public = random.randint(1, total_comics)
@@ -89,11 +89,6 @@ def main():
         comic_book, message = get_comic_book(url)
         download_image(comic_book['img'], f'{num_of_public}.png')
         image_for_public = os.path.join('images', f'{num_of_public}.png')
-
-        vk_url = 'https://api.vk.com/method/groups.get'
-        params = {'access_token': token, 'v': '5.131'}
-        response_vk = requests.get(vk_url, params=params)
-        print(response_vk.json())
 
         publish_post_to_vk_wall(token, group_id, image_for_public, message)
     except requests.exceptions.HTTPError as error:
