@@ -14,7 +14,7 @@ def download_image(url, filename):
         file.write(response.content)
 
 
-def get_request_for_comic(url):
+def get_comic_book(url):
     response = requests.get(url)
     response.raise_for_status()
     decoded_response = response.json()
@@ -25,7 +25,7 @@ def get_request_for_comic(url):
     return comic_book, message
 
 
-def public_post_to_vk_wall(token, group_id, image, text):
+def publish_post_to_vk_wall(token, group_id, image, text):
     vk_url = 'https://api.vk.com/method/photos.getWallUploadServer'
     params = {'access_token': token, 'v': '5.131', 'group_id': group_id}
     response = requests.get(vk_url, params=params)
@@ -79,13 +79,13 @@ def main():
     Path('images').mkdir(exist_ok=True)
     try:
         url = 'https://xkcd.com/info.0.json'
-        comic_book, message = get_request_for_comic(url)
+        comic_book, message = get_comic_book(url)
         download_image(comic_book['img'], 'image.png')
 
         total_comics = comic_book['num']
         num_of_public = random.randint(1, total_comics)
         url = f'https://xkcd.com/{num_of_public}/info.0.json'
-        comic_book, message = get_request_for_comic(url)
+        comic_book, message = get_comic_book(url)
         download_image(comic_book['img'], f'{num_of_public}.png')
         image_for_public = os.path.join('images', f'{num_of_public}.png')
 
@@ -94,7 +94,7 @@ def main():
         response_vk = requests.get(vk_url, params=params)
         print(response_vk.json())
 
-        public_post_to_vk_wall(token, group_id, image_for_public, message)
+        publish_post_to_vk_wall(token, group_id, image_for_public, message)
     except requests.exceptions.HTTPError as error:
         logging.error(f'Ошибка сервера: {error}')
     finally:
