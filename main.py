@@ -24,7 +24,7 @@ def get_comic_book(url):
     return comic_book, message
 
 
-def publish_post_to_vk_wall(token, group_id, image, text):
+def get_upload_url(token, group_id):
     vk_url = 'https://api.vk.com/method/photos.getWallUploadServer'
     params = {'access_token': token, 'v': '5.131', 'group_id': group_id}
     response = requests.get(vk_url, params=params)
@@ -33,25 +33,33 @@ def publish_post_to_vk_wall(token, group_id, image, text):
     if 'error' in decoded_response:
         raise requests.exceptions.HTTPError(decoded_response['error'])
     upload_url = decoded_response['response']['upload_url']
+    return upload_url
 
+
+def upload_image_to_vk_server(upload_url, image):
     with open(image, 'rb') as file:
         response = requests.post(upload_url, files={'photo': file})
     response.raise_for_status()
     response_for_public = response.json()
     if 'error' in response_for_public:
         raise requests.exceptions.HTTPError(response_for_public['error'])
-    vk_server = response_for_public['server']
-    vk_photo = response_for_public['photo']
-    vk_hash = response_for_public['hash']
+    params_for_public = {
+        'vk_server': response_for_public['server'],
+        'vk_photo': response_for_public['photo'],
+        'vk_hash': response_for_public['hash']
+    }
+    return params_for_public
 
+
+def save_image(token, group_id, params_for_public):
     save_url = 'https://api.vk.com/method/photos.saveWallPhoto'
     params = {
         'access_token': token,
         'v': '5.131',
         'group_id': group_id,
-        'photo': vk_photo,
-        'server': vk_server,
-        'hash': vk_hash
+        'photo': params_for_public['vk_photo'],
+        'server': params_for_public['vk_server'],
+        'hash': params_for_public['vk_hash']
     }
     response = requests.post(save_url, params=params)
     response.raise_for_status()
@@ -61,6 +69,10 @@ def publish_post_to_vk_wall(token, group_id, image, text):
     owner_id = save_wall_photo['response'][0]['owner_id']
     media_id = save_wall_photo['response'][0]['id']
     attachments = f'photo{owner_id}_{media_id}'
+    return attachments
+
+
+def publish_post_to_vk_wall(token, group_id, attachments, text):
     post_url = 'https://api.vk.com/method/wall.post'
     params = {
         'access_token': token,
@@ -90,7 +102,17 @@ def main():
         download_image(comic_book['img'], f'{num_of_public}.png')
         image_for_public = os.path.join('images', f'{num_of_public}.png')
 
-        publish_post_to_vk_wall(token, group_id, image_for_public, message)
+        upload_url = get_upload_url(token, group_id)
+
+        params_for_public = upload_image_to_vk_server(
+            upload_url,
+            image_for_public
+        )
+
+        attachments = save_image(token, group_id, params_for_public)
+
+        publish_post_to_vk_wall(token, group_id, attachments, message)
+
     except requests.exceptions.HTTPError as error:
         logging.error(f'Ошибка сервера: {error}')
     finally:
