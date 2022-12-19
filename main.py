@@ -28,6 +28,7 @@ def publish_post_to_vk_wall(token, group_id, image, text):
     vk_url = 'https://api.vk.com/method/photos.getWallUploadServer'
     params = {'access_token': token, 'v': '5.131', 'group_id': group_id}
     response = requests.get(vk_url, params=params)
+    response.raise_for_status()
     decoded_response = response.json()
     if 'error' in decoded_response:
         raise requests.exceptions.HTTPError(decoded_response['error'])
@@ -52,7 +53,9 @@ def publish_post_to_vk_wall(token, group_id, image, text):
         'server': vk_server,
         'hash': vk_hash
     }
-    save_wall_photo = requests.post(save_url, params=params).json()
+    response = requests.post(save_url, params=params)
+    response.raise_for_status()
+    save_wall_photo = response.json()
     if 'error' in save_wall_photo:
         raise requests.exceptions.HTTPError(save_wall_photo['error'])
     owner_id = save_wall_photo['response'][0]['owner_id']
@@ -67,8 +70,8 @@ def publish_post_to_vk_wall(token, group_id, image, text):
         'attachments': attachments,
         'message': text
     }
-    requests.post(post_url, params=params)
-
+    response = requests.post(post_url, params=params)
+    response.raise_for_status()
 
 def main():
     load_dotenv()
