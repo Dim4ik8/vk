@@ -40,26 +40,26 @@ def upload_image_to_vk_server(upload_url, image):
     with open(image, 'rb') as file:
         response = requests.post(upload_url, files={'photo': file})
     response.raise_for_status()
-    response_for_public = response.json()
-    if 'error' in response_for_public:
-        raise requests.exceptions.HTTPError(response_for_public['error'])
-    params_for_public = {
-        'vk_server': response_for_public['server'],
-        'vk_photo': response_for_public['photo'],
-        'vk_hash': response_for_public['hash']
+    response_for_posting = response.json()
+    if 'error' in response_for_posting:
+        raise requests.exceptions.HTTPError(response_for_posting['error'])
+    params_for_posting = {
+        'vk_server': response_for_posting['server'],
+        'vk_photo': response_for_posting['photo'],
+        'vk_hash': response_for_posting['hash']
     }
-    return params_for_public
+    return params_for_posting
 
 
-def save_image(token, group_id, params_for_public):
+def save_image(token, group_id, params_for_posting):
     save_url = 'https://api.vk.com/method/photos.saveWallPhoto'
     params = {
         'access_token': token,
         'v': '5.131',
         'group_id': group_id,
-        'photo': params_for_public['vk_photo'],
-        'server': params_for_public['vk_server'],
-        'hash': params_for_public['vk_hash']
+        'photo': params_for_posting['vk_photo'],
+        'server': params_for_posting['vk_server'],
+        'hash': params_for_posting['vk_hash']
     }
     response = requests.post(save_url, params=params)
     response.raise_for_status()
@@ -96,11 +96,11 @@ def main():
         comic_book, message = get_comic_book(url)
 
         total_comics = comic_book['num']
-        num_of_public = random.randint(1, total_comics)
-        url = f'https://xkcd.com/{num_of_public}/info.0.json'
+        publication_number = random.randint(1, total_comics)
+        url = f'https://xkcd.com/{publication_number}/info.0.json'
         comic_book, message = get_comic_book(url)
-        download_image(comic_book['img'], f'{num_of_public}.png')
-        image_for_public = os.path.join('images', f'{num_of_public}.png')
+        download_image(comic_book['img'], f'{publication_number}.png')
+        image_for_public = os.path.join('images', f'{publication_number}.png')
 
         upload_url = get_upload_url(token, group_id)
 
