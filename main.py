@@ -63,11 +63,11 @@ def save_image(token, group_id, server, photo, hash):
     }
     response = requests.post(url_for_saving, params=params)
     response.raise_for_status()
-    saved_photo = response.json()
+    response_for_saving = response.json()
     if 'error' in saved_photo:
-        raise requests.exceptions.HTTPError(saved_photo['error'])
-    owner_id = saved_photo['response'][0]['owner_id']
-    media_id = saved_photo['response'][0]['id']
+        raise requests.exceptions.HTTPError(response_for_saving['error'])
+    owner_id = response_for_saving['response'][0]['owner_id']
+    media_id = response_for_saving['response'][0]['id']
     attachments = f'photo{owner_id}_{media_id}'
     return attachments
 
