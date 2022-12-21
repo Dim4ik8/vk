@@ -43,23 +43,23 @@ def upload_image_to_vk_server(upload_url, image):
     response_for_posting = response.json()
     if 'error' in response_for_posting:
         raise requests.exceptions.HTTPError(response_for_posting['error'])
-    params_for_posting = {
-        'vk_server': response_for_posting['server'],
-        'vk_photo': response_for_posting['photo'],
-        'vk_hash': response_for_posting['hash']
-    }
-    return params_for_posting
+
+    vk_server = response_for_posting['server'],
+    vk_photo = response_for_posting['photo'],
+    vk_hash = response_for_posting['hash']
+
+    return vk_server, vk_photo, vk_hash
 
 
-def save_image(token, group_id, params_for_posting):
+def save_image(token, group_id, server, photo, hash):
     url_for_saving = 'https://api.vk.com/method/photos.saveWallPhoto'
     params = {
         'access_token': token,
         'v': '5.131',
         'group_id': group_id,
-        'photo': params_for_posting['vk_photo'],
-        'server': params_for_posting['vk_server'],
-        'hash': params_for_posting['vk_hash']
+        'photo': photo,
+        'server': server,
+        'hash': hash
     }
     response = requests.post(url_for_saving, params=params)
     response.raise_for_status()
@@ -100,16 +100,13 @@ def main():
         url = f'https://xkcd.com/{publication_number}/info.0.json'
         comic_book, message = get_comic_book(url)
         download_image(comic_book['img'], f'{publication_number}.png')
-        image_for_public = os.path.join('images', f'{publication_number}.png')
+        image_for_posting = os.path.join('images', f'{publication_number}.png')
 
         upload_url = get_upload_url(token, group_id)
 
-        params_for_public = upload_image_to_vk_server(
-            upload_url,
-            image_for_public
-        )
+        server, photo, hash = upload_image_to_vk_server(upload_url, image_for_posting)
 
-        attachments = save_image(token, group_id, params_for_public)
+        attachments = save_image(token, group_id, server, photo, hash)
 
         publish_post_to_vk_wall(token, group_id, attachments, message)
 
