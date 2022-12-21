@@ -14,14 +14,25 @@ def download_image(url, filename):
         file.write(response.content)
 
 
+def get_count_of_comics(url):
+    response = requests.get(url)
+    response.raise_for_status()
+    comic_book = response.json()
+    if 'error' in comic_book:
+        raise requests.exceptions.HTTPError(comic_book['error'])
+    count = comic_book['num']
+    return count
+
+
 def get_comic_book(url):
     response = requests.get(url)
     response.raise_for_status()
     comic_book = response.json()
     if 'error' in comic_book:
         raise requests.exceptions.HTTPError(comic_book['error'])
+    image = comic_book['img']
     message = comic_book['alt']
-    return comic_book, message
+    return image, message
 
 
 def get_upload_url(token, group_id):
@@ -64,7 +75,7 @@ def save_image(token, group_id, server, photo, hash):
     response = requests.post(url_for_saving, params=params)
     response.raise_for_status()
     response_for_saving = response.json()
-    if 'error' in saved_photo:
+    if 'error' in response_for_saving:
         raise requests.exceptions.HTTPError(response_for_saving['error'])
     owner_id = response_for_saving['response'][0]['owner_id']
     media_id = response_for_saving['response'][0]['id']
@@ -93,18 +104,19 @@ def main():
     Path('images').mkdir(exist_ok=True)
     try:
         url = 'https://xkcd.com/info.0.json'
-        comic_book, message = get_comic_book(url)
-
-        total_comics = comic_book['num']
+        total_comics = get_count_of_comics(url)
         publication_number = random.randint(1, total_comics)
         url = f'https://xkcd.com/{publication_number}/info.0.json'
-        comic_book, message = get_comic_book(url)
-        download_image(comic_book['img'], f'{publication_number}.png')
+        image, message = get_comic_book(url)
+        download_image(image, f'{publication_number}.png')
         image_for_posting = os.path.join('images', f'{publication_number}.png')
 
         upload_url = get_upload_url(token, group_id)
 
-        server, photo, hash = upload_image_to_vk_server(upload_url, image_for_posting)
+        server, photo, hash = upload_image_to_vk_server(
+            upload_url,
+            image_for_posting
+        )
 
         attachments = save_image(token, group_id, server, photo, hash)
 
