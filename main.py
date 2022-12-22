@@ -30,9 +30,9 @@ def get_comic_book(url):
     comic_book = response.json()
     if 'error' in comic_book:
         raise requests.exceptions.HTTPError(comic_book['error'])
-    image = comic_book['img']
+    url_to_image = comic_book['img']
     message = comic_book['alt']
-    return image, message
+    return url_to_image, message
 
 
 def get_upload_url(token, group_id):
@@ -107,8 +107,8 @@ def main():
         total_comics = get_count_of_comics(url)
         publication_number = random.randint(1, total_comics)
         url = f'https://xkcd.com/{publication_number}/info.0.json'
-        image, message = get_comic_book(url)
-        download_image(image, f'{publication_number}.png')
+        url_to_image, message = get_comic_book(url)
+        download_image(url_to_image, f'{publication_number}.png')
         image_for_posting = os.path.join('images', f'{publication_number}.png')
 
         upload_url = get_upload_url(token, group_id)
