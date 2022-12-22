@@ -62,15 +62,15 @@ def upload_image_to_vk_server(upload_url, image):
     return vk_server, vk_photo, vk_hash
 
 
-def save_image(token, group_id, server, photo, hash):
+def save_image(token, group_id, vk_server, vk_photo, vk_hash):
     url_for_saving = 'https://api.vk.com/method/photos.saveWallPhoto'
     params = {
         'access_token': token,
         'v': '5.131',
         'group_id': group_id,
-        'photo': photo,
-        'server': server,
-        'hash': hash
+        'photo': vk_photo,
+        'server': vk_server,
+        'hash': vk_hash
     }
     response = requests.post(url_for_saving, params=params)
     response.raise_for_status()
@@ -113,12 +113,12 @@ def main():
 
         upload_url = get_upload_url(token, group_id)
 
-        server, photo, hash = upload_image_to_vk_server(
+        vk_server, vk_photo, vk_hash = upload_image_to_vk_server(
             upload_url,
             image_for_posting
         )
 
-        attachments = save_image(token, group_id, server, photo, hash)
+        attachments = save_image(token, group_id, vk_server, vk_photo, vk_hash)
 
         publish_post_to_vk_wall(token, group_id, attachments, message)
 
